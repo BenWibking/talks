@@ -32,6 +32,8 @@ def weight_function(dx, dy, sigma):
     return invsqrt_twopi/sigma*np.exp(-r_sq/(sigma*sigma))
 
 def compute_meshless_density(x, y, points, mypoint, sigma):
+    # N.B. in a real application, sigma would be the local smoothing length at (x,y)
+
     # first compute inverse number density at (x,y)
     w_inverse = 0.
     for j in xrange(points.shape[0]):
@@ -39,6 +41,10 @@ def compute_meshless_density(x, y, points, mypoint, sigma):
 
     # now compute the weighted number density due to point 'mypoint'
     return weight_function(x - mypoint[0], y - mypoint[1], sigma)/w_inverse
+
+def compute_sph_density(x, y, points, mypoint, sigma):
+    # N.B. in a real application, sigma would be the local smoothing length at (x,y)
+    return weight_function(x - mypoint[0], y - mypoint[1], sigma)
 
 def plot_meshless(args):
     npoints = args.npoints
@@ -58,6 +64,27 @@ def plot_meshless(args):
     ppl.scatter(ax,points[:,0],points[:,1],color='white')
     ax.autoscale(tight=True)
     plt.title(args.subtitle)
+#    plt.show()
+
+def plot_sph(args):
+    npoints = args.npoints
+    points = generate_2d_points(npoints,args.seed)
+
+    x = np.arange(0.,1.,.01)
+    y = np.arange(0.,1.,.01)
+    xx,yy = np.meshgrid(x,y)
+
+    import prettyplotlib as ppl
+    fig,ax = ppl.subplots()
+
+    for mypoint in points:
+        dens = compute_sph_density(xx, yy, points, mypoint, args.sigma)
+        plt.contourf(xx,yy,dens,alpha=1./npoints)
+
+    ppl.scatter(ax,points[:,0],points[:,1],color='white')
+    ax.autoscale(tight=True)
+    plt.title(args.subtitle)
     plt.show()
 
 plot_meshless(args)
+plot_sph(args)
